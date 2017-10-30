@@ -23,8 +23,8 @@ public class KafkaProducerTest {
         Producer<Object, String> producer = new KafkaProducer<>(props);
         int totalMessageCount = 10000;
         for (int i = 0; i < totalMessageCount; i++) {
-            String value = String.format("%d,%s,%d", System.currentTimeMillis(), "machine-1", currentMemSize());
-            producer.send(new ProducerRecord<>("topic123", value), new Callback() {
+            String value = String.format("%d,%s,%d", System.currentTimeMillis(), "zjh-home-pc", currentMemSize());
+            producer.send(new ProducerRecord<>("flinkkafkamemtopic", value), new Callback() {
                 @Override
                 public void onCompletion(RecordMetadata metadata, Exception exception) {
                     if (exception != null) {

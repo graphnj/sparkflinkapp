@@ -73,12 +73,10 @@ public class KafkaMessageStreaming {
 
         DataStream<Tuple2<String, Long>> keyedStream  = windowedStream.apply(expectWindowFunction);
 
-        //keyedStream.writeAsText(args[1]);
         keyedStream.writeAsText(output_file, FileSystem.WriteMode.OVERWRITE);
         env.execute("Flink-Kafka demo");
     }
 }
-
 
 class windows_avg implements WindowFunction<Tuple2<String, Long>, Tuple2<String, Long>, Tuple, TimeWindow> {
     @Override
