@@ -76,10 +76,10 @@ object  CleanerTester
     val cnt=rdd2.count()
     println("count="+cnt)
     rdd2.checkpoint()
-    rdd1.foreach(println)
-    rdd1 = spark.sparkContext.parallelize(0 until 10, 2)
-    rdd1.checkpoint()
-    rdd1.count()
+    rdd2.foreach(println)
+    rdd2 = spark.sparkContext.parallelize(0 until 10, 2)
+    rdd2.checkpoint()
+    rdd2.count()
   }
 
   def main(args: Array[String]) {
