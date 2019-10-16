@@ -21,5 +21,14 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.1" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.25" level="project" />
     <orderEntry type="library" name="Maven: org.rocksdb:rocksdbjni:5.7.3" level="project" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/Downloads/CameraThreatAnalysis-DGA-1.0.0-SNAPSHOT.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
