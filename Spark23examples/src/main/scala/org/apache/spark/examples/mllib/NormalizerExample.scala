@@ -20,6 +20,8 @@ package org.apache.spark.examples.mllib
 
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
+import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.rdd.RDD
 // $example on$
 import org.apache.spark.mllib.feature.Normalizer
 import org.apache.spark.mllib.util.MLUtils
@@ -35,6 +37,8 @@ object NormalizerExample {
     // $example on$
     val data = MLUtils.loadLibSVMFile(sc, "data/mllib/sample_libsvm_data.txt")
 
+
+    val xx=MLUtils.loadVectors(sc,"data/mllib/featurevector1000.txt")
     val normalizer1 = new Normalizer()
     val normalizer2 = new Normalizer(p = Double.PositiveInfinity)
 

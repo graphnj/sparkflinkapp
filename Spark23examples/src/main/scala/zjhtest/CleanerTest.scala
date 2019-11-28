@@ -12,20 +12,24 @@ import org.apache.spark._
 import org.apache.spark.sql.SparkSession
 
 
-
-object  CleanerTester
+/**
+  * @auth zhujinhua 0049003202
+  * @desc 验证spark.cleaner.referenceTracking.cleanCheckpoints 参数的使用
+  * @date 2019/9/30 11:28
+  */
+object  CleanerTest
 {
   val conf = new SparkConf()
     .setMaster("local[2]")
-    .setAppName("ContextCleanerSuite")
+    .setAppName("ContextCleanerTester")
     .set("spark.cleaner.referenceTracking.blocking", "true")
-    .set("spark.cleaner.referenceTracking.blocking.shuffle", "true")
+    .set("spark.cleaner.referenceTracking.blocking.shuffle", "false")
     .set("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
 
 
   val spark = SparkSession
     .builder
-    .appName("GroupBy Test")
+    .appName("ContextCleanerTester")
     .config(conf)
     .getOrCreate()
 
@@ -69,17 +73,26 @@ object  CleanerTester
 
 
   def fun(){
+
+
     var rdd1 = spark.sparkContext.parallelize(0 until 1000, 2)
-    // Enforce that everything has been calculated and in cache
-    rdd1.checkpoint()
+
     var rdd2=rdd1.map(_+1).map(_*2)
-    val cnt=rdd2.count()
-    println("count="+cnt)
-    rdd2.checkpoint()
-    rdd2.foreach(println)
-    rdd2 = spark.sparkContext.parallelize(0 until 10, 2)
-    rdd2.checkpoint()
-    rdd2.count()
+
+
+    var i=0
+    for(i <- 1 to 10000){
+      rdd2=rdd2.union(rdd1)
+      rdd2.checkpoint()
+      println("i="+i+"  count="+rdd2.count)
+      Thread.sleep(1000)
+    }
+
+
+
+    //Thread.sleep(10000000)
+
+    val a=5
   }
 
   def main(args: Array[String]) {
