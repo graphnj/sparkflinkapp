@@ -1,7 +1,6 @@
 package zjhtest
 
 import org.apache.spark.SparkConf
-import org.apache.spark.examples.streaming.StreamingExamples
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
@@ -14,7 +13,6 @@ object sscTest {
   def main(args: Array[String]) {
 
 
-    StreamingExamples.setStreamingLogLevels()
     val sparkConf = new SparkConf().setAppName("HdfsWordCount").setMaster("local[4]")
     // Create the context
     val ssc = new StreamingContext(sparkConf, Seconds(2))
