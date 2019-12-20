@@ -7,10 +7,11 @@ import java.sql.Timestamp
 import java.util
 
 import breeze.linalg.DenseMatrix
-import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.ml.clustering.{KMeans, KMeansModel}
+import org.apache.spark.ml.linalg.{Vector, Vectors}
 import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -28,55 +29,52 @@ object KMeansTrain {
   val modelOutputFile = modelPath+"model-"+numClusters+".dat"
 
   // ES config
-  val EsServerIp="10.45.154.207"
+  val EsServerIp="10.45.154.219"
   val EsHttpPort=9200
   val indexWithTypeInput="fss_history_yc_without_nullfeature/history_data"
   val startTime="2018-06-10 18:00:00"
   val endTime="2018-06-10 23:00:00"
 
-  val conf = new SparkConf().setAppName("CoarseTrain")
-
-  conf.set("es.index.auto.create", "true")
-  conf.set("es.nodes", EsServerIp)
-  conf.set("es.port", String.valueOf(EsHttpPort))
-  conf.set("es.read.field.exclude", "gps_xy") //spark无法读取geo_point类型数据
-  conf.set("es.nodes.wan.only", "true")
-  conf.set("es.index.auto.create", "true")
-  conf.set("es.index.read.missing.as.empty", "true")
-
-  val sc = new SparkContext(conf)
-
-  def loadDataFromES():RDD[Vector]={
 
 
-    val ds = ESReader.loadESData(sc, indexWithTypeInput,
+  def loadDataFromES(spark:SparkSession):DataFrame={
+    case class InputRow[TId, TVector](id: TId, vector: TVector)
+
+    import spark.implicits._
+
+    val ds = ESReader.loadESData(spark.sparkContext, indexWithTypeInput,
       null, Timestamp.valueOf(startTime), Timestamp.valueOf(endTime))
+        .map(x=>Vector(x._3)).toDF()
 
     logger.info("load record from ES: "+ds.count())
     ds.cache()
   }
 
-  def loadDataFromFile():RDD[Vector]={
-    val data = sc.textFile("data/mllib/feature11000.txt")
+  def loadDataFromFile(spark:SparkSession):DataFrame={
+    /*val data = sc.textFile("data/mllib/feature11000.txt")
     val parsedData = data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).cache()
     parsedData.saveAsTextFile("data/mllib/featurevector11000.txt")
-    parsedData
+    */
+    import spark.implicits._
+    val parsedData =  MLUtils.loadVectors(spark.sparkContext,"data/mllib/featurevector1000.txt")
+    parsedData.map{x=>Vector(x)}.toDF()
   }
 
 
-  def train()={
-    val parsedData = loadDataFromES()
+  def train(spark:SparkSession)={
+    val parsedData = loadDataFromES(spark)
 
     logger.info("begin train "+numClusters+" cluster and iteration is "+numIterations)
-    val clusters = KMeans.train(parsedData, numClusters, numIterations)
-
+    //val clusters = KMeans.train(parsedData, numClusters, numIterations)
+    val kmeans = new KMeans().setK(numClusters).setSeed(1L)
+    val model = kmeans.fit(parsedData)
     // Evaluate clustering by computing Within Set Sum of Squared Errors
-    val WSSSE = clusters.computeCost(parsedData)
+    val WSSSE = model.computeCost(parsedData)
     logger.info(s"Within Set Sum of Squared Errors = $WSSSE")
 
-    clusters.clusterCenters.foreach(println)
+    model.clusterCenters.foreach(println)
 
-    val arrarr=clusters.clusterCenters.map(_.toArray.map(_.toFloat).map(Float.box(_)))
+    val arrarr=model.clusterCenters.map(_.toArray.map(_.toFloat).map(Float.box(_)))
 
 
     ModelUtils.saveModel(arrarr,modelOutputFile)
@@ -103,7 +101,24 @@ object KMeansTrain {
     if (!f1.exists)
       f1.mkdirs
 
-    train()
+    val conf = new SparkConf().setAppName("CoarseTrain")
+
+    conf.set("es.index.auto.create", "true")
+    conf.set("es.nodes", EsServerIp)
+    conf.set("es.port", String.valueOf(EsHttpPort))
+    conf.set("es.read.field.exclude", "gps_xy") //spark无法读取geo_point类型数据
+    conf.set("es.nodes.wan.only", "true")
+    conf.set("es.index.auto.create", "true")
+    conf.set("es.index.read.missing.as.empty", "true")
+
+    val sc = new SparkContext(conf)
+    val spark = SparkSession
+      .builder
+      .config(conf)
+      .appName(s"${this.getClass.getSimpleName}")
+      .getOrCreate()
+
+    train(spark)
 
     sc.stop()
   }

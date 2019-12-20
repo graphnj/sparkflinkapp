@@ -146,6 +146,11 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>com.github.jelmerk</groupId>
+      <artifactId>hnswlib-spark_2.3.0_2.11</artifactId>
+      <version>0.0.27</version>
+    </dependency>
   </dependencies>
 
   <build>

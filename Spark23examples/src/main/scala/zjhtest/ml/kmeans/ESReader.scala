@@ -7,7 +7,7 @@ import java.util.{Base64, Calendar, Date}
 
 import com.alibaba.fastjson.JSON
 import org.apache.spark.SparkContext
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
+import org.apache.spark.ml.linalg.{Vector, Vectors}
 import org.apache.spark.rdd.RDD
 import org.elasticsearch.spark.rdd.EsSpark
 
@@ -22,7 +22,7 @@ object ESReader {
 
 
   def loadESData(sc:SparkContext, indexWithType: String, querystr: String, startTime: Timestamp = startTime,
-               endTime: Timestamp = currentTime): RDD[Vector] = {
+               endTime: Timestamp = currentTime,featureFieldName:String="feature"): RDD[(String,String,Vector)] = {
 
     //    ConfigurationManager.loadAndconvertConfigurationFile(true)
     //    ParameterInitializer.initializeAllParameters()
@@ -51,24 +51,22 @@ object ESReader {
     val esRdd = ee.map{row => row._2}
         .map(rec => {
           val ele = JSON.parseObject(rec)
-          val rt_reature=ele.getString("rt_feature")
+          var rt_reature= ele.getString(featureFieldName)
+
           var feature:Array[Float]=null
           var dimension:Int=256
+          val uuid=ele.getString("uuid")
+          val enter_time=ele.getString("enter_time")
           if(rt_reature != null) {
             feature = FeatureTools.arrayByte2arrayFloat(Base64.getDecoder.decode(rt_reature))
             dimension = feature.length
-            ele.remove("rt_feature")
+            ele.remove(featureFieldName)
           }
           else {
-            val jsonarray = ele.getJSONArray("feature")
-            dimension = jsonarray.size()
-            feature=new Array[Float](dimension)
-            for (i<-0 to (jsonarray.size()-1)){
-              feature(i)=jsonarray.getFloat(i)
-            }
+            println("cannot load es field:"+featureFieldName)
           }
 
-          Vectors.dense(FeatureTools.normalizeFeatrue(feature, dimension).map{_.toDouble})
+          (uuid,enter_time,Vectors.dense(FeatureTools.normalizeFeatrue(feature, dimension).map{_.toDouble}))
         })
 
     esRdd
