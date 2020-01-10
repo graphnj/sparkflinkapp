@@ -123,10 +123,10 @@ object HNSWTest {
     conf.set("es.index.auto.create", "true")
     conf.set("es.nodes", EsServerIp)
     conf.set("es.port", String.valueOf(EsHttpPort))
-    conf.set("es.read.field.exclude", "gps_xy") //spark无法读取geo_point类型数据
-    conf.set("es.nodes.wan.only", "true")
-    conf.set("es.index.auto.create", "true")
-    conf.set("es.index.read.missing.as.empty", "true")
+    //conf.set("es.read.field.exclude", "gps_xy") //spark无法读取geo_point类型数据
+    //conf.set("es.nodes.wan.only", "true")
+    //conf.set("es.index.auto.create", "true")
+    //conf.set("es.index.read.missing.as.empty", "true")
 
 
     conf.getAll.foreach(println)

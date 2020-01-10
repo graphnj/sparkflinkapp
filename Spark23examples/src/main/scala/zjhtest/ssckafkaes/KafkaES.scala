@@ -37,10 +37,12 @@ object KafkaES {
   private def setESConf(conf: SparkConf, esipport:String): Unit = {
     conf.set("es.nodes", esipport.split(":").apply(0))
     conf.set("es.port", esipport.split(":").apply(1))
-    conf.set("es.index.auto.create", "true")
-    conf.set("es.input.json","true")
-    conf.set("es.nodes.wan.only", "true")
-    conf.set("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
+    conf.set("es.nodes", "lv208.dct-znv.com")
+    conf.set("es.port", "9200")
+    //conf.set("es.index.auto.create", "true")
+    //conf.set("es.input.json","true")
+    //conf.set("es.nodes.wan.only", "true")
+    //conf.set("spark.cleaner.referenceTracking.cleanCheckpoints", "true")
   }
   def sendKafka(brokers:String, topics:String)={
 
@@ -68,7 +70,8 @@ object KafkaES {
   def main(args: Array[String]) {
     if (args.length < 2) {
       System.err.println(s"""
-                            |Usage: DirectKafkaWordCount <brokers> <topics>
+                            |Usage: xx  <brokers> <topics> <esipport> <esindex>
+                            |xx 10.45.154.218:9092 testtopic 10.45.154.218:9200 testesindex
                             |  <brokers> is a list of one or more Kafka brokers
                             |  <topics> is a list of one or more kafka topics to consume from
                             |
