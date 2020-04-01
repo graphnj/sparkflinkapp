@@ -5,6 +5,7 @@ import java.lang.ref.WeakReference
 import org.apache.spark.{Dependency, ShuffleDependency, SparkConf, SparkEnv}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.slf4j.LoggerFactory
 
 
 /**
@@ -14,6 +15,7 @@ import org.apache.spark.sql.SparkSession
 
 object JobTest {
 
+  val logger = LoggerFactory.getLogger(JobTest.getClass)
   import zjhtest.metric.ZNVMetrics
 
 
@@ -81,7 +83,6 @@ object JobTest {
   def main(args: Array[String]) {
 
 
-
     System.getProperties.entrySet().asScala.foreach(println(_))
     //  .map(key => (key, System.getProperty(key))).toMap
 
@@ -99,6 +100,11 @@ object JobTest {
       .appName("ContextCleanerTester")
       .config(conf)
       .getOrCreate()
+
+    for(i<-1 to 100) {
+      logger.info("sdfasd"+i)
+    }
+
 
     val x=new ZNVMetrics()
     x.func(conf, SparkEnv.get)
